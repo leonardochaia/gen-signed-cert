@@ -9,16 +9,21 @@ echo "Starting gen-signed-cert for $SSL_SUBJECT"
 if test -f "$CA_FILE_NAME.pem"; then
     echo "Found CA file, reusing: $FILE"
 else
-    echo "Generating Root Certification Authority: $CA_FILE_NAME.{pem,key}"
+    echo "Generating Root Certification Authority Private Key: $CA_FILE_NAME.key"
     # Generate private key
     openssl genrsa -out "$CA_FILE_NAME".key 2048
+
     # Generate root certificate
+    echo "Generating Root Certification Authority Certificate: $CA_FILE_NAME.pem"
     openssl req -x509 -new -nodes \
         -key "$CA_FILE_NAME".key \
         -sha256 \
         -days 36500 \
         -subj "/CN=$SSL_SUBJECT Fake CA/" \
         -out "$CA_FILE_NAME".pem
+
+    echo "Converting Root Certification Authority Certificate to crt: $CA_FILE_NAME.crt"
+    openssl x509 -outform der -in "$CA_FILE_NAME".pem -out "$CA_FILE_NAME".crt
 fi
 
 # generate PK
